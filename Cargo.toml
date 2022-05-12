@@ -3,6 +3,18 @@ name = "bevy_template"
 version = "0.1.0"
 edition = "2021"
 
+# Enable only a small amount of optimization in debug mode
+[profile.dev]
+opt-level = 1
+
+# Enable high optimizations for dependencies (incl. Bevy), but not for our code:
+[profile.dev.package."*"]
+opt-level = 3
+
+# increases performance, but slows compile time
+[profile.release]
+lto = "thin"
+
 [dependencies]
 # remove dynamic linking for release      *****
 bevy = { version = "0.7.0", features = ["dynamic"] }
