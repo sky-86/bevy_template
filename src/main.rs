@@ -1,4 +1,5 @@
 use bevy::{prelude::*, render::camera::ScalingMode, window::PresentMode};
+use rand::prelude::*;
 
 pub const CLEAR: Color = Color::rgb(1.0, 1.0, 1.0);
 pub const RESOLUTION: f32 = 16.0 / 9.0;
@@ -27,15 +28,18 @@ impl Size {
             height: x,
         }
     }
+
+    pub fn rect(x: f32, y: f32) -> Self {
+        Self {
+            width: x,
+            height: y,
+        }
+    }
 }
 
 fn size_scaling(windows: Res<Windows>, mut q: Query<(&Size, &mut Transform)>) {
     let window = windows.get_primary().unwrap();
     for (sprite_size, mut transform) in q.iter_mut() {
-        println!(
-            "width: {}, height: {}, transform: {:?}",
-            sprite_size.width, sprite_size.height, transform
-        );
         transform.scale = Vec3::new(
             sprite_size.width / GRID_WIDTH as f32 * window.width() as f32,
             sprite_size.height / GRID_HEIGHT as f32 * window.height() as f32,
@@ -64,48 +68,38 @@ fn position_translation(windows: Res<Windows>, mut q: Query<(&Position, &mut Tra
 struct Data(Vec<u8>);
 
 fn create_random_vec() -> Vec<u8> {
-    let vec: Vec<u8> = (1..=VECTOR_SIZE as u8).collect();
-    //    vec.shuffle(&mut thread_rng());
+    let mut vec: Vec<u8> = (1..=VECTOR_SIZE as u8).collect();
+    vec.shuffle(&mut thread_rng());
     vec
 }
 
+#[derive(Component)]
+struct Num(u8);
+
+#[derive(Component)]
+struct Selection {
+    i: usize,
+    j: usize,
+    smallest: usize,
+}
+
 fn spawn_vector(mut commands: Commands) {
-    //let Data(vec) = Data(create_random_vec());
-    let parent_box = commands
-        .spawn_bundle(SpriteBundle {
-            sprite: Sprite {
-                color: Color::rgb(0.1, 0.1, 1.0),
-                ..Default::default()
-            },
-            ..Default::default()
-        })
-        .insert(Position { x: 0, y: 0 })
-        .insert(Size::square(1.0))
-        .id();
+    let Data(vec) = Data(create_random_vec());
 
-    println!("Spawned snake {:?}", parent_box);
-
-    /*
-    for i in vec {
+    for (x, i) in vec.iter().enumerate() {
         let col = commands
             .spawn_bundle(SpriteBundle {
                 sprite: Sprite {
                     color: Color::rgb(0.1, 0.1, 1.0),
                     ..Default::default()
                 },
-                transform: Transform {
-                    translation: Vec3::new(0.0, 0.0, 1.0),
-                    scale: Vec3::new(0.0, 0.0, 1.0),
-
-                    ..Default::default()
-                },
                 ..Default::default()
             })
+            .insert(Position { x: x as i32, y: 0 })
+            .insert(Size::rect(1.0, *i as f32 * 2.0))
+            .insert(Num(*i))
             .id();
-
-        commands.entity(parent_box).push_children(&[col]);
     }
-        */
 }
 
 fn spawn_camera(mut commands: Commands) {

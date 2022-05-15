@@ -18,3 +18,4 @@ lto = "thin"
 [dependencies]
 # remove dynamic linking for release      *****
 bevy = { version = "0.7.0", features = ["dynamic"] }
+rand = "0.7.3"
